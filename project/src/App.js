@@ -1,54 +1,40 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
-import Contact from './Contact';
+import { Form } from './Form';
+export const App = () => {
+  const [data, setData] = useState([]);
+  const [fullData, setFullData] = useState([]);
+  const [search, setSearch] = useState(false);
+  console.log(data);
 
-const VSU_STUDENTS = [
-  { name: 'Razmik', surname: 'Kirakosyan', image: 'https://www.pngfind.com/pngs/m/201-2013416_tux-linux-logo-start-menu-linux-icons-hd.png' },
-  { name: 'Van', surname: null, image: 'https://www.pngfind.com/pngs/m/201-2013416_tux-linux-logo-start-menu-linux-icons-hd.png' },
-  { name: 'Tatev', image: 'https://www.pngfind.com/pngs/m/201-2013416_tux-linux-logo-start-menu-linux-icons-hd.png' },
-  { name: 'Mariam', image: 'https://www.pngfind.com/pngs/m/201-2013416_tux-linux-logo-start-menu-linux-icons-hd.png' },
-  { name: 'Fillik', image: 'https://www.pngfind.com/pngs/m/201-2013416_tux-linux-logo-start-menu-linux-icons-hd.png' },
-  { name: 'NN', image: 'https://www.pngfind.com/pngs/m/201-2013416_tux-linux-logo-start-menu-linux-icons-hd.png' },
-];
+  useEffect(() => {
+    fetch('https://jsonplaceholder.typicode.com/users/')
+      .then(response => response.json())
+      .then(responsedata => setFullData(responsedata));
+  }, []);
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { list: VSU_STUDENTS };
-  }
-
-  boo() {
-    return <h1>VSU</h1>
-  };
-
-  handleChange = (e) => {
-    const val = e.target.value
-    this.setState({ list: VSU_STUDENTS.filter(i => i.name.includes(val)) });
-  }
-
-  render() {
-
-    return (
-      <div className="App">
-        {this.boo()}
-
-        <div className='search'>
-          <label for="gsearch">Search Contact:</label>
-          <input type="search" id="gsearch" name="gsearch" onChange={this.handleChange} />
-        </div>
-
-        <div className='contacts'>
-          {this.state.list.map(i =>
-            <Contact
-              image={i.image}
-              name={i.name}
-              surname={i.surname}
-              key={i.name} />)}
-        </div>
-      </div>
+  const onSearch = useCallback(e => {
+    const { target: { value } } = e;
+    const lowerCaseValue = value.toLowerCase();
+    setSearch(!!lowerCaseValue);
+    const arrayTmp = fullData.filter(element =>
+      element.name.toLowerCase().includes(lowerCaseValue) ||
+      //element.surname.toLowerCase().includes(lowerCaseValue) ||
+      element.email.toLowerCase().includes(lowerCaseValue) ||
+      element.phone.includes(value)
     );
-  }
-}
+    setData(arrayTmp);
+  }, [fullData]);
 
+  return <div className="contacts">
+    <div>
+      <h3 className ='search'>Search contact</h3>
+      
+      <input onChange={onSearch} className ='search'/>
+  
+    </div>
+    <Form data={search ? data : fullData} />
+  </div>
+
+}
 export default App;
